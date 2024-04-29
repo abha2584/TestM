@@ -1,0 +1,124 @@
+﻿@page "/"
+@inject HttpClient HttpClient
+@using System.Text.Json;
+@using FrontendWebApp.Models
+
+<h1>Employee and Departments</h1>
+
+@if (_showLoading)
+{
+	<div class="position-relative p-3"> Loading....</div>
+}
+else
+{
+	<div class="card-header">Employees</div>
+	<div class="container">
+		<div class="row">
+			@if (_employees != null)
+			{
+				@foreach (Employee employee in _employees)
+				{
+					<div class="row-cols-4">
+						<p>First Name : @employee.firstName</p>
+						<p>Last Name : @employee.lastName</p>
+						<p>Hire Date: @employee.hireDate</p>
+						<p>Salary: @employee.salary</p>
+					</div>
+
+				}
+			}
+		</div>
+		<div class="card-header">Departments</div>
+		<div class="row">
+			@if (_departments != null)
+			{
+				@foreach (Department department in _departments)
+				{
+					<div class="row">
+						<p>Name : @department.name</p>
+					</div>
+
+				}
+			}
+		</div>
+	</div>
+
+
+
+}
+
+@code {
+	private bool _showLoading = true;
+
+	private List<Employee> _employees = new List<Employee>();
+
+	private List<Department> _departments = new List<Department>();
+
+	private readonly string EMP = "employees";
+	private readonly string DEPT = "departments";
+
+	protected override async Task OnInitializedAsync()
+	{
+		var response = await HttpClient.GetAsync("https://localhost:7224/api/Web");
+
+
+		if (response.IsSuccessStatusCode)
+		{
+			string content = await response.Content.ReadAsStringAsync();
+			JsonElement jsonElement = JsonSerializer.Deserialize<JsonElement>(content);
+
+			if (jsonElement.ValueKind == JsonValueKind.Object)
+			{
+				_GetEmployees(jsonElement);
+				_GetDepartments(jsonElement);
+
+			}
+
+
+		}
+
+		_showLoading = false;
+	}
+
+	private void _GetEmployees(JsonElement jsonElement)
+	{
+		if (jsonElement.TryGetProperty(EMP, out JsonElement employeeElement))
+		{
+			if (employeeElement.ValueKind == JsonValueKind.String)
+			{
+				employeeElement = JsonSerializer.Deserialize<JsonElement>(employeeElement.GetString());
+			}
+
+			if (employeeElement.ValueKind == JsonValueKind.Array)
+			{
+
+				foreach (var item in employeeElement.EnumerateArray())
+				{
+					Employee employee = JsonSerializer.Deserialize<Employee>(item.GetRawText());
+					_employees.Add(employee);
+				}
+			}
+		}
+	}
+
+	private void _GetDepartments(JsonElement jsonElement)
+	{
+		if (jsonElement.TryGetProperty(DEPT, out JsonElement departmentElement))
+		{
+			if (departmentElement.ValueKind == JsonValueKind.String)
+			{
+				departmentElement = JsonSerializer.Deserialize<JsonElement>(departmentElement.GetString());
+			}
+
+			if (departmentElement.ValueKind == JsonValueKind.Array)
+			{
+
+				foreach (var item in departmentElement.EnumerateArray())
+				{
+					Department department = JsonSerializer.Deserialize<Department>(item.GetRawText());
+					_departments.Add(department);
+				}
+			}
+		}
+	}
+}
