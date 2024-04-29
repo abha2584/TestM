@@ -1,0 +1,44 @@
+Given the following:
+
+ class Animal
+ {
+    public virtual string speak(int x) { return "silence"; }
+ }
+
+ class Cat : Animal
+ {
+      public string speak(int x) { return "meow"; }
+ }
+
+ class Dog : Animal
+ {
+      public string speak(short x) { return "bow-wow"; }
+ }
+
+Question: Explain why the block below does not emit “bow-wow”:
+          Animal  d = new Dog(); 
+          Console.Write(d.speak(0)); 
+
+ANSWER : This will return silence since we are creating an object of type animal and method signature matches with speak of animal.
+
+ class A
+ {
+     public int a { get; set; }
+     public int b { get; set; }
+}
+
+class B
+{
+    public const A a;  
+    public B()  { a.a = 10; }
+}
+
+int main()
+{
+    B b = new B();
+    Console.WriteLine("%d %d\n", b.a.a, b.a.b);
+    return 0;
+}
+
+ANSWER :  Const cannot be assigned to reference types. public A a = new A();  
+    public B()  { a.a = 10; } and console.write needs to use string interpolation instead of C++ formaters.
